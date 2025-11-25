@@ -112,18 +112,24 @@ class Link(Simple):
     def __init__(self, element_tag: HtmlTag = None):
         super().__init__(element_tag)
         if self.support.get(self.element_tag.name, '') == 'a':
-            url = self.element_tag['href']
-            if not bool(re.search(r'(http)|(www)', url)):
-                url = 'https://www.zhihu.com' + url
-            self.url = url
-            text = self.element_tag.get_text('#', strip=True)
-            self.text = re.sub(r'#.#', '——', text)
+            url = self.element_tag.get('href')
+            if not url:
+                # 无 href 的 a 标签视为纯文本，避免 KeyError
+                self.url = ''
+                text = self.element_tag.get_text('#', strip=True)
+                self.text = re.sub(r'#.#', '——', text)
+            else:
+                if not bool(re.search(r'(http)|(www)', url)):
+                    url = 'https://www.zhihu.com' + url
+                self.url = url
+                text = self.element_tag.get_text('#', strip=True)
+                self.text = re.sub(r'#.#', '——', text)
         else:
             self.text = self.element_tag['data-text'].strip()
             self.url = self.element_tag['data-url'].strip()
 
     def to_markdown(self):
-        return '[%s](%s)' % (self.text, self.url)
+        return '[%s](%s)' % (self.text, self.url) if self.url else self.text
 
 
 class Url(Simple):

@@ -14,6 +14,14 @@ def get(url, hearders):
     try:
         response = requests.get(url, headers=hearders, timeout=10)
         response.raise_for_status()
+        # 手动处理部分接口仍返回 br 压缩的情况
+        if response.headers.get('Content-Encoding') == 'br':
+            try:
+                import brotli
+                response._content = brotli.decompress(response.content)
+                response.headers.pop('Content-Encoding', None)
+            except Exception as e:
+                print('brotli 解压失败：', e)
         return response
     except requests.exceptions.ReadTimeout as e:
         print('连接超时：', e)

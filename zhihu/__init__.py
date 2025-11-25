@@ -6,7 +6,7 @@ SLEEP = 5
 
 
 class Controller:
-    def __init__(self, crawl_times=-1, limit=20):
+    def __init__(self, crawl_times=-1, limit=20, collect_all=False):
         self.totals = -1  # 总数
         self.offset = 0  # 起始
         self.limit = limit  # 每次下载的数量
@@ -14,6 +14,7 @@ class Controller:
         self.stop = False  # 停止控制器
         self.crawl_times = crawl_times  # 最大爬取数量
         self.crawl_counter = 0  # 爬取数量计数器，（收录和未收录的总数）
+        self.collect_all = collect_all  # 是否收录全部回答（不筛选）
 
     def increase(self, num=None):
         if num is None:
@@ -50,6 +51,8 @@ class Controller:
         return 'totals: {}, offset:{}, limit: {}'.format(self.totals, self.offset, self.limit)
 
     def to_collect(self, answer_content):
+        if self.collect_all:
+            return True
         n = timer.timestamp()
         v = answer_content['voteup_count']
         c = answer_content['created_time']
